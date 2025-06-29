@@ -1,43 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>MeckTech Admin</title>
-  <link rel="stylesheet" href="admin.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeckTech Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    input, select {
+      width: 80%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 4px;
+      border: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 8px;
+      background-color: #00b894;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #019270;
+    }
+    #questionList li {
+      background: #1e1e1e;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: left;
+    }
+  </style>
 </head>
-  <script>
-  if (localStorage.getItem("adminAuth") !== "true") {
-    window.location.href = "login.html";
-  }
-</script>
 <body>
-  <div class="container">
-    <h1>MeckTech Admin Panel</h1>
 
-    <h2>🖼️ Upload Logo</h2>
-    <input type="file" id="logoUpload" accept="image/*">
-    <p id="logoStatus">No logo uploaded</p>
+  <h1>🛠️ MeckTech Admin Panel</h1>
+  <h2>Add / Edit Question</h2>
 
-    <h2>🏷️ Company Name</h2>
-    <input type="text" id="companyName" placeholder="MeckTech">
-    <button onclick="saveName()">Save Name</button>
+  <input id="qtext" placeholder="Enter Question"><br>
+  <input id="a" placeholder="Option A"><br>
+  <input id="b" placeholder="Option B"><br>
+  <input id="c" placeholder="Option C"><br>
+  <input id="d" placeholder="Option D"><br>
 
-    <h2>❓ Manage Questions</h2>
-    <textarea id="questionText" placeholder="Enter your question"></textarea>
-    <input type="text" placeholder="Option A" id="opt1">
-    <input type="text" placeholder="Option B" id="opt2">
-    <input type="text" placeholder="Option C" id="opt3">
-    <input type="text" placeholder="Option D" id="opt4">
-    <input type="number" placeholder="Correct Option (1-4)" id="correct">
-    <button onclick="addQuestion()">Add Question</button>
+  <select id="correct">
+    <option value="">Correct Option</option>
+    <option value="a">A</option>
+    <option value="b">B</option>
+    <option value="c">C</option>
+    <option value="d">D</option>
+  </select><br>
 
-    <h2>💰 Certificate Price</h2>
-    <input type="number" id="price" placeholder="149">
-    <button onclick="savePrice()">Save Price</button>
+  <button onclick="submitQuestion()" id="submitBtn">Add Question</button>
 
-    <h2>✅ Paid Users</h2>
-    <ul id="paidList"></ul>
-  </div>
+  <h3 style="margin-top: 40px;">📄 Current Questions</h3>
+  <ul id="questionList" style="list-style: none; padding: 0;"></ul>
 
-  <script src="admin.js"></script>
+  <script>
+    let questions = JSON.parse(localStorage.getItem("questions")) || [];
+    let editingIndex = null;
+
+    function saveQuestions() {
+      localStorage.setItem("questions", JSON.stringify(questions));
+      renderQuestions();
+    }
+
+    function renderQuestions() {
+      const list = document.getElementById("questionList");
+      list.innerHTML = "";
+      questions.forEach((q, index) => {
+        let li = document.createElement("li");
+        li.innerHTML = `
+          <strong>Q${index + 1}:</strong> ${q.question}<br>
+          A) ${q.options.a} | B) ${q.options.b} | C) ${q.options.c} | D) ${q.options.d}<br>
+          ✅ Correct: ${q.correct}<br><br>
+          <button onclick="editQuestion(${index})">✏️ Edit</button>
+          <button onclick="deleteQuestion(${index})" style="background:red;">🗑️ Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function submitQuestion() {
+      const q = document.getElementById("qtext").value.trim();
+      const a = document.getElementById("a").value.trim();
+      const b = document.getElementById("b").value.trim();
+      const c = document.getElementById("c").value.trim();
+      const d = document.getElementById("d").value.trim();
+      const correct = document.getElementById("correct").value;
+
+      if (!q || !a || !b || !c || !d || !correct) {
+        alert("⚠️ Please fill all fields");
+        return;
+      }
+
+      const newQuestion = {
+        question: q,
+        options: { a, b, c, d },
+        correct
+      };
+
+      if (editingIndex !== null) {
+        questions[editingIndex] = newQuestion;
+        editingIndex = null;
+        document.getElementById("submitBtn").innerText = "Add Question";
+      } else {
+        questions.push(newQuestion);
+      }
+
+      saveQuestions();
+      resetForm();
+      alert("✅ Saved successfully!");
+    }
+
+    function resetForm() {
+      document.getElementById("qtext").value = "";
+      document.getElementById("a").value = "";
+      document.getElementById("b").value = "";
+      document.getElementById("c").value = "";
+      document.getElementById("d").value = "";
+      document.getElementById("correct").value = "";
+    }
+
+    function deleteQuestion(index) {
+      if (confirm("Are you sure you want to delete this question?")) {
+        questions.splice(index, 1);
+        saveQuestions();
+      }
+    }
+
+    function editQuestion(index) {
+      const q = questions[index];
+      document.getElementById("qtext").value = q.question;
+      document.getElementById("a").value = q.options.a;
+      document.getElementById("b").value = q.options.b;
+      document.getElementById("c").value = q.options.c;
+      document.getElementById("d").value = q.options.d;
+      document.getElementById("correct").value = q.correct;
+      editingIndex = index;
+      document.getElementById("submitBtn").innerText = "Update Question";
+    }
+
+    window.onload = renderQuestions;
+  </script>
 </body>
 </html>
