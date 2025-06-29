@@ -1,36 +1,247 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Test Questions</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MeckTech Admin Panel</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 30px;
+    }
+    input, select {
+      width: 90%;
+      max-width: 500px;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #00b894;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #019270;
+    }
+    .section {
+      margin-bottom: 40px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 30px;
+    }
+    h2 {
+      color: #00cec9;
+    }
+    #questionList li {
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #1e1e1e;
+      border-radius: 6px;
+      list-style: none;
+    }
+  </style>
 </head>
-<body style="background:black; color:white; padding:40px;">
+<body>
 
-<h2>Add Question (Test)</h2>
-<input id="qtext" placeholder="Enter Question"><br><br>
-<button onclick="add()">Save</button>
-<ul id="list"></ul>
+  <h1>🚀 MeckTech Admin Panel</h1>
 
-<script>
-  let questions = JSON.parse(localStorage.getItem("questions")) || [];
+  <!-- Brand and Logo -->
+  <div class="section">
+    <h2>🖼️ Brand & Logo</h2>
+    <input type="text" id="brandName" placeholder="Enter Company Name"><br>
+    <input type="file" id="logoUpload" onchange="previewLogo()"><br>
+    <img id="logoPreview" src="" height="80" style="margin-top:10px;"><br>
+    <button onclick="saveBrand()">Save Brand</button>
+  </div>
 
-  function add() {
-    const q = document.getElementById("qtext").value;
-    if (!q) return alert("Enter question");
-    questions.push({ question: q });
-    localStorage.setItem("questions", JSON.stringify(questions));
-    render();
-  }
+  <!-- Pricing -->
+  <div class="section">
+    <h2>💰 Certificate Pricing</h2>
+    <input type="number" id="price" placeholder="Current Price (e.g. 149)">
+    <input type="number" id="originalPrice" placeholder="Original Price (e.g. 249)">
+    <button onclick="savePrice()">Save Pricing</button>
+  </div>
 
-  function render() {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-    questions.forEach((q, i) => {
-      list.innerHTML += `<li>${i + 1}. ${q.question}</li>`;
-    });
-  }
+  <!-- Questions -->
+  <div class="section">
+    <h2>📘 Add/Edit Questions</h2>
+    <input id="qtext" placeholder="Enter Question"><br>
+    <input id="a" placeholder="Option A"><br>
+    <input id="b" placeholder="Option B"><br>
+    <input id="c" placeholder="Option C"><br>
+    <input id="d" placeholder="Option D"><br>
+    <select id="correct">
+      <option value="">Select Correct Answer</option>
+      <option value="a">A</option>
+      <option value="b">B</option>
+      <option value="c">C</option>
+      <option value="d">D</option>
+    </select><br>
+    <button onclick="submitQuestion()" id="submitBtn">Add Question</button>
+    <ul id="questionList"></ul>
+  </div>
 
-  window.onload = render;
-</script>
+  <!-- Paid Users -->
+  <div class="section">
+    <h2>📋 Paid Users</h2>
+    <ul id="userList"></ul>
+  </div>
 
+  <script>
+    // Branding
+    function saveBrand() {
+      const name = document.getElementById("brandName").value;
+      const logo = document.getElementById("logoPreview").src;
+      localStorage.setItem("brandName", name);
+      localStorage.setItem("brandLogo", logo);
+      alert("✅ Brand info saved!");
+    }
+
+    function previewLogo() {
+      const file = document.getElementById("logoUpload").files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        document.getElementById("logoPreview").src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadBrand() {
+      document.getElementById("brandName").value = localStorage.getItem("brandName") || "";
+      const logo = localStorage.getItem("brandLogo");
+      if (logo) document.getElementById("logoPreview").src = logo;
+    }
+
+    // Pricing
+    function savePrice() {
+      const price = document.getElementById("price").value;
+      const original = document.getElementById("originalPrice").value;
+      localStorage.setItem("certificatePrice", price);
+      localStorage.setItem("originalPrice", original);
+      alert("✅ Price saved!");
+    }
+
+    function loadPrice() {
+      document.getElementById("price").value = localStorage.getItem("certificatePrice") || "";
+      document.getElementById("originalPrice").value = localStorage.getItem("originalPrice") || "";
+    }
+
+    // Questions
+    let questions = JSON.parse(localStorage.getItem("questions")) || [];
+    let editingIndex = null;
+
+    function renderQuestions() {
+      const list = document.getElementById("questionList");
+      list.innerHTML = "";
+      questions.forEach((q, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>Q${index + 1}:</strong> ${q.question}<br>
+          A) ${q.options.a}<br>
+          B) ${q.options.b}<br>
+          C) ${q.options.c}<br>
+          D) ${q.options.d}<br>
+          ✅ Correct: ${q.correct}<br>
+          <button onclick="editQuestion(${index})">✏️ Edit</button>
+          <button onclick="deleteQuestion(${index})" style="background:red;">🗑️ Delete</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function submitQuestion() {
+      const q = document.getElementById("qtext").value;
+      const a = document.getElementById("a").value;
+      const b = document.getElementById("b").value;
+      const c = document.getElementById("c").value;
+      const d = document.getElementById("d").value;
+      const correct = document.getElementById("correct").value;
+
+      if (!q || !a || !b || !c || !d || !correct) {
+        return alert("⚠️ Please fill all fields");
+      }
+
+      const question = {
+        question: q,
+        options: { a, b, c, d },
+        correct
+      };
+
+      if (editingIndex !== null) {
+        questions[editingIndex] = question;
+        editingIndex = null;
+        document.getElementById("submitBtn").innerText = "Add Question";
+      } else {
+        questions.push(question);
+      }
+
+      localStorage.setItem("questions", JSON.stringify(questions));
+      renderQuestions();
+      resetForm();
+    }
+
+    function resetForm() {
+      document.getElementById("qtext").value = "";
+      document.getElementById("a").value = "";
+      document.getElementById("b").value = "";
+      document.getElementById("c").value = "";
+      document.getElementById("d").value = "";
+      document.getElementById("correct").value = "";
+    }
+
+    function deleteQuestion(index) {
+      if (confirm("Delete this question?")) {
+        questions.splice(index, 1);
+        localStorage.setItem("questions", JSON.stringify(questions));
+        renderQuestions();
+      }
+    }
+
+    function editQuestion(index) {
+      const q = questions[index];
+      document.getElementById("qtext").value = q.question;
+      document.getElementById("a").value = q.options.a;
+      document.getElementById("b").value = q.options.b;
+      document.getElementById("c").value = q.options.c;
+      document.getElementById("d").value = q.options.d;
+      document.getElementById("correct").value = q.correct;
+      editingIndex = index;
+      document.getElementById("submitBtn").innerText = "Update Question";
+    }
+
+    // Paid Users
+    function renderUsers() {
+      const list = JSON.parse(localStorage.getItem("paidUsers")) || [];
+      const ul = document.getElementById("userList");
+      ul.innerHTML = "";
+      list.forEach(u => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          👤 <strong>${u.name}</strong><br>
+          📧 ${u.email}<br>
+          🧠 Score: ${u.score}/20
+        `;
+        li.style.background = "#1e1e1e";
+        li.style.padding = "10px";
+        li.style.marginBottom = "10px";
+        li.style.borderRadius = "6px";
+        ul.appendChild(li);
+      });
+    }
+
+    window.onload = () => {
+      loadBrand();
+      loadPrice();
+      renderQuestions();
+      renderUsers();
+    };
+  </script>
 </body>
 </html>
