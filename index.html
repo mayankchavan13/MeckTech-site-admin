@@ -2,344 +2,244 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MeckTech Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
     body {
-      background-color: #121212;
-      color: #ffffff;
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
+      background-color: #121212;
+      color: #fff;
     }
-
-    header {
-      padding: 1rem;
-      background-color: #1e1e1e;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header img {
-      height: 50px;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.8rem;
-    }
-
     .container {
+      max-width: 800px;
+      margin: auto;
       padding: 2rem;
     }
-
-    .section {
+    h1, h2 {
+      text-align: center;
+      color: #03dac5;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
       background-color: #1e1e1e;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      margin-top: 0.5rem;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #03dac5;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    .section {
+      margin-bottom: 3rem;
+      padding: 1rem;
+      background-color: #1e1e1e;
       border-radius: 10px;
     }
-
-    label {
-      display: block;
-      margin-top: 0.8rem;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.3rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #2a2a2a;
-      color: white;
-    }
-
-    button {
-      margin-top: 1rem;
-      padding: 0.8rem 1.5rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #03dac5;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .question-box {
+    .question-item {
       background: #2a2a2a;
       padding: 1rem;
-      margin-top: 1rem;
+      margin: 1rem 0;
       border-radius: 5px;
     }
-
-    .question-box small {
-      display: block;
-      color: #aaa;
+    .question-actions {
+      margin-top: 0.5rem;
     }
-
-    .actions button {
-      background: transparent;
-      border: none;
-      color: #03dac5;
-      cursor: pointer;
-      margin-left: 1rem;
-    }
-
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.9rem;
-      color: #888;
+    .price-strike {
+      text-decoration: line-through;
+      color: #999;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1 id="companyName">MeckTech</h1>
-    <img id="companyLogo" src="" alt="Logo" style="display:none;">
-  </header>
   <div class="container">
+    <h1>MeckTech Admin Panel</h1>
+
     <div class="section">
-      <h2>Upload Logo & Set Company Name</h2>
-      <input type="file" id="logoInput" accept="image/*">
-      <label>Company Name</label>
-      <input type="text" id="nameInput" placeholder="e.g. MeckTech" />
-      <button onclick="saveLogoAndName()">Save</button>
+      <h2>🔧 Company Branding</h2>
+      <input type="text" id="companyName" placeholder="Enter Company Name" />
+      <input type="file" id="logoInput" />
+      <button onclick="saveBranding()">Save Branding</button>
     </div>
 
     <div class="section">
-      <h2>Set Certificate Price</h2>
-      <label>Original Price</label>
-      <input type="number" id="originalPrice" placeholder="e.g. 249" />
-      <label>Discounted Price (if any)</label>
-      <input type="number" id="discountedPrice" placeholder="e.g. 149" />
+      <h2>🧠 Add New Question</h2>
+      <input type="text" id="q" placeholder="Enter question" />
+      <input type="text" id="a" placeholder="Option A" />
+      <input type="text" id="b" placeholder="Option B" />
+      <input type="text" id="c" placeholder="Option C" />
+      <input type="text" id="d" placeholder="Option D" />
+      <input type="text" id="correct" placeholder="Correct Option (A/B/C/D)" />
+      <button onclick="addQuestion()">Add Question</button>
+    </div>
+
+    <div class="section">
+      <h2>📜 Questions List</h2>
+      <div id="questionsList"></div>
+    </div>
+
+    <div class="section">
+      <h2>💸 Certificate Price</h2>
+      <input type="number" id="price" placeholder="Enter Price (e.g. 149)" />
+      <input type="number" id="discount" placeholder="Discounted Price (e.g. 99)" />
       <button onclick="savePrice()">Save Price</button>
     </div>
 
     <div class="section">
-      <h2>Add Assessment Question</h2>
-      <label>Question</label>
-      <input type="text" id="questionInput" />
-      <label>Option A</label>
-      <input type="text" id="optA" />
-      <label>Option B</label>
-      <input type="text" id="optB" />
-      <label>Option C</label>
-      <input type="text" id="optC" />
-      <label>Option D</label>
-      <input type="text" id="optD" />
-      <label>Correct Option (A/B/C/D)</label>
-      <input type="text" id="correct" maxlength="1" />
-      <button onclick="submitQuestion()">Add Question</button>
-
-      <div id="questionList"></div>
+      <h2>👥 Paid Users</h2>
+      <ul id="paidUsersList"></ul>
     </div>
+  </div>
 
-    <div class="section">
-      <h2>Paid Users</h2>
-      <div id="paidUsersList">Loading...</div>
-    </div>
-
-    <footer>
-      Contact: <a href="mailto:royalmanagement02@gmail.com">royalmanagement02@gmail.com</a>
-    </footer>
 <script>
-const github = {
-  username: "mayankchavan13",
-  repo: "MeckTech-site-admin",
-  token: "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", // 🔁 REPLACE this with your GitHub token
-  filePath: "questions.json"
-};
+const token = "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"; // 🔑 Your GitHub token here
+const repo = "mayankchavan13/MeckTech-site-admin";
 
-let editingIndex = -1;
-let questionData = [];
-
-async function fetchQuestions() {
-  const api = `https://raw.githubusercontent.com/${github.username}/${github.repo}/main/${github.filePath}`;
-  try {
-    const res = await fetch(api);
-    const data = await res.json();
-    questionData = data;
-    renderQuestions();
-  } catch (err) {
-    console.error("Error loading questions:", err);
-    questionData = [];
-  }
-}
-
-function renderQuestions() {
-  const container = document.getElementById("questionList");
-  container.innerHTML = "";
-  questionData.forEach((q, i) => {
-    const box = document.createElement("div");
-    box.className = "question-box";
-    box.innerHTML = `
-      <b>Q${i + 1}:</b> ${q.question}
-      <small>A: ${q.options[0]} | B: ${q.options[1]} | C: ${q.options[2]} | D: ${q.options[3]}</small>
-      <small>Correct: ${q.correct}</small>
-      <div class="actions">
-        <button onclick="editQuestion(${i})">✏️ Edit</button>
-        <button onclick="deleteQuestion(${i})">🗑️ Delete</button>
-      </div>
-    `;
-    container.appendChild(box);
+async function updateFile(filename, data) {
+  const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
+  const getRes = await fetch(url, {
+    headers: { Authorization: `token ${token}` }
   });
-}
+  const fileData = await getRes.json();
+  const sha = fileData.sha;
+  const content = btoa(JSON.stringify(data, null, 2));
 
-function submitQuestion() {
-  const question = document.getElementById("questionInput").value.trim();
-  const optA = document.getElementById("optA").value.trim();
-  const optB = document.getElementById("optB").value.trim();
-  const optC = document.getElementById("optC").value.trim();
-  const optD = document.getElementById("optD").value.trim();
-  const correct = document.getElementById("correct").value.toUpperCase();
-
-  if (!question || !optA || !optB || !optC || !optD || !["A", "B", "C", "D"].includes(correct)) {
-    alert("Please fill all fields correctly.");
-    return;
-  }
-
-  const newQuestion = {
-    question,
-    options: [optA, optB, optC, optD],
-    correct
-  };
-
-  if (editingIndex >= 0) {
-    questionData[editingIndex] = newQuestion;
-    editingIndex = -1;
-  } else {
-    questionData.push(newQuestion);
-  }
-
-  document.getElementById("questionInput").value = "";
-  document.getElementById("optA").value = "";
-  document.getElementById("optB").value = "";
-  document.getElementById("optC").value = "";
-  document.getElementById("optD").value = "";
-  document.getElementById("correct").value = "";
-
-  saveQuestionsToGitHub(questionData);
-  renderQuestions();
-}
-
-function editQuestion(index) {
-  const q = questionData[index];
-  document.getElementById("questionInput").value = q.question;
-  document.getElementById("optA").value = q.options[0];
-  document.getElementById("optB").value = q.options[1];
-  document.getElementById("optC").value = q.options[2];
-  document.getElementById("optD").value = q.options[3];
-  document.getElementById("correct").value = q.correct;
-  editingIndex = index;
-}
-
-function deleteQuestion(index) {
-  if (confirm("Delete this question?")) {
-    questionData.splice(index, 1);
-    saveQuestionsToGitHub(questionData);
-    renderQuestions();
-  }
-}
-
-async function saveQuestionsToGitHub(questions) {
-  const api = `https://api.github.com/repos/${github.username}/${github.repo}/contents/${github.filePath}`;
-  const content = btoa(JSON.stringify(questions, null, 2));
-
-  let sha = "";
-  try {
-    const res = await fetch(api, {
-      headers: {
-        Authorization: `token ${github.token}`,
-        Accept: "application/vnd.github+json"
-      }
-    });
-    const data = await res.json();
-    sha = data.sha;
-  } catch {}
-
-  await fetch(api, {
+  await fetch(url, {
     method: "PUT",
     headers: {
-      Authorization: `token ${github.token}`,
+      Authorization: `token ${token}`,
       Accept: "application/vnd.github+json"
     },
     body: JSON.stringify({
-      message: "Update questions",
+      message: `Update ${filename}`,
       content,
       sha
     })
   });
 }
-</script>
-<script>
-function saveLogoAndName() {
-  const logoInput = document.getElementById("logoInput");
+
+// BRANDING
+async function saveBranding() {
+  const name = document.getElementById("companyName").value;
+  const logoFile = document.getElementById("logoInput").files[0];
+  if (!logoFile) return alert("Please select a logo");
+
   const reader = new FileReader();
-  reader.onload = function () {
-    const dataURL = reader.result;
-    localStorage.setItem("companyLogo", dataURL);
-    document.getElementById("companyLogo").src = dataURL;
-    document.getElementById("companyLogo").style.display = "inline-block";
+  reader.onloadend = async function () {
+    const logo = reader.result;
+    const branding = { name, logo };
+    await updateFile("branding.json", branding);
+    alert("✅ Branding updated");
   };
-  if (logoInput.files[0]) {
-    reader.readAsDataURL(logoInput.files[0]);
-  }
-
-  const name = document.getElementById("nameInput").value.trim();
-  if (name) {
-    localStorage.setItem("companyName", name);
-    document.getElementById("companyName").innerText = name;
-  }
+  reader.readAsDataURL(logoFile);
 }
 
-function savePrice() {
-  const original = document.getElementById("originalPrice").value.trim();
-  const discount = document.getElementById("discountedPrice").value.trim();
-  if (original && discount && parseInt(discount) < parseInt(original)) {
-    localStorage.setItem("priceInfo", JSON.stringify({ original, discount }));
-    alert("Price updated successfully.");
-  } else {
-    alert("Please enter valid pricing.");
-  }
+// QUESTIONS
+let questions = [];
+
+async function loadQuestions() {
+  const res = await fetch(`https://raw.githubusercontent.com/${repo}/main/questions.json`);
+  questions = await res.json();
+  renderQuestions();
 }
 
-async function fetchPaidUsers() {
-  try {
-    const res = await fetch("../paid_users.json");
-    const users = await res.json();
-    const container = document.getElementById("paidUsersList");
-    container.innerHTML = "";
-
-    users.forEach(u => {
-      const div = document.createElement("div");
-      div.className = "question-box";
-      div.innerHTML = `<b>${u.name}</b> | ${u.email} | Score: ${u.score}`;
-      container.appendChild(div);
-    });
-  } catch {
-    document.getElementById("paidUsersList").innerText = "No users found.";
-  }
+function renderQuestions() {
+  const list = document.getElementById("questionsList");
+  list.innerHTML = "";
+  questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "question-item";
+    div.innerHTML = `
+      <b>Q${i + 1}: ${q.question}</b>
+      <ul>
+        ${q.options.map((opt, idx) => `<li>${String.fromCharCode(65 + idx)}. ${opt}</li>`).join("")}
+      </ul>
+      <small>Correct: ${q.correct}</small>
+      <div class="question-actions">
+        <button onclick="editQuestion(${i})">Edit</button>
+        <button onclick="deleteQuestion(${i})">Delete</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
 }
 
-window.onload = () => {
-  fetchQuestions();
-  fetchPaidUsers();
+function addQuestion() {
+  const q = document.getElementById("q").value;
+  const options = [
+    document.getElementById("a").value,
+    document.getElementById("b").value,
+    document.getElementById("c").value,
+    document.getElementById("d").value
+  ];
+  const correct = document.getElementById("correct").value.toUpperCase();
 
-  const savedLogo = localStorage.getItem("companyLogo");
-  const savedName = localStorage.getItem("companyName");
-
-  if (savedLogo) {
-    document.getElementById("companyLogo").src = savedLogo;
-    document.getElementById("companyLogo").style.display = "inline-block";
+  if (!q || options.some(opt => !opt) || !["A","B","C","D"].includes(correct)) {
+    alert("Please fill all fields correctly.");
+    return;
   }
 
-  if (savedName) {
-    document.getElementById("companyName").innerText = savedName;
-  }
-};
+  questions.push({ question: q, options, correct });
+  updateFile("questions.json", questions).then(() => {
+    alert("✅ Question added");
+    loadQuestions();
+    document.getElementById("q").value = "";
+    document.getElementById("a").value = "";
+    document.getElementById("b").value = "";
+    document.getElementById("c").value = "";
+    document.getElementById("d").value = "";
+    document.getElementById("correct").value = "";
+  });
+}
+
+function deleteQuestion(index) {
+  if (!confirm("Delete this question?")) return;
+  questions.splice(index, 1);
+  updateFile("questions.json", questions).then(loadQuestions);
+}
+
+function editQuestion(index) {
+  const q = questions[index];
+  document.getElementById("q").value = q.question;
+  document.getElementById("a").value = q.options[0];
+  document.getElementById("b").value = q.options[1];
+  document.getElementById("c").value = q.options[2];
+  document.getElementById("d").value = q.options[3];
+  document.getElementById("correct").value = q.correct;
+  deleteQuestion(index);
+}
+
+// PRICE
+async function savePrice() {
+  const price = Number(document.getElementById("price").value);
+  const discount = Number(document.getElementById("discount").value);
+  await updateFile("price.json", { price, discount });
+  alert("✅ Price updated");
+}
+
+// USERS
+async function loadUsers() {
+  const res = await fetch(`https://raw.githubusercontent.com/${repo}/main/paid_users.json`);
+  const users = await res.json();
+  const ul = document.getElementById("paidUsersList");
+  ul.innerHTML = "";
+  users.forEach(u => {
+    const li = document.createElement("li");
+    li.innerText = `${u.name} | ${u.email} | Score: ${u.score}`;
+    ul.appendChild(li);
+  });
+}
+
+loadQuestions();
+loadUsers();
 </script>
 </body>
 </html>
