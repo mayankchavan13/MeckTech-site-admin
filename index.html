@@ -1,242 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MeckTech Admin Panel</title>
   <style>
     body {
       background-color: #121212;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 30px;
+      color: #ffffff;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
     }
-    input, select {
-      width: 90%;
-      max-width: 500px;
-      padding: 10px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 4px;
+
+    header {
+      padding: 1rem;
+      background-color: #1e1e1e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    button {
-      padding: 10px 20px;
-      background-color: #00b894;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin: 5px;
+
+    header img {
+      height: 50px;
     }
-    button:hover {
-      background-color: #019270;
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
     }
+
+    .container {
+      padding: 2rem;
+    }
+
     .section {
-      margin-bottom: 40px;
-      border-bottom: 1px solid #333;
-      padding-bottom: 30px;
+      background-color: #1e1e1e;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-radius: 10px;
     }
-    h2 {
-      color: #00cec9;
+
+    label {
+      display: block;
+      margin-top: 0.8rem;
     }
-    #questionList li, #userList li {
-      margin-bottom: 20px;
-      padding: 10px;
-      background: #1e1e1e;
-      border-radius: 6px;
-      list-style: none;
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #2a2a2a;
+      color: white;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #03dac5;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .question-box {
+      background: #2a2a2a;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 5px;
+    }
+
+    .question-box small {
+      display: block;
+      color: #aaa;
+    }
+
+    .actions button {
+      background: transparent;
+      border: none;
+      color: #03dac5;
+      cursor: pointer;
+      margin-left: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #888;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1 id="companyName">MeckTech</h1>
+    <img id="companyLogo" src="" alt="Logo" style="display:none;">
+  </header>
+  <div class="container">
+    <div class="section">
+      <h2>Upload Logo & Set Company Name</h2>
+      <input type="file" id="logoInput" accept="image/*">
+      <label>Company Name</label>
+      <input type="text" id="nameInput" placeholder="e.g. MeckTech" />
+      <button onclick="saveLogoAndName()">Save</button>
+    </div>
 
-<h1>🛠️ MeckTech Admin Panel</h1>
+    <div class="section">
+      <h2>Set Certificate Price</h2>
+      <label>Original Price</label>
+      <input type="number" id="originalPrice" placeholder="e.g. 249" />
+      <label>Discounted Price (if any)</label>
+      <input type="number" id="discountedPrice" placeholder="e.g. 149" />
+      <button onclick="savePrice()">Save Price</button>
+    </div>
 
-<!-- Brand & Logo -->
-<div class="section">
-  <h2>🖼️ Brand & Logo</h2>
-  <input type="text" id="brandName" placeholder="Enter Company Name"><br>
-  <input type="file" id="logoUpload" onchange="previewLogo()"><br>
-  <img id="logoPreview" src="" height="80" style="margin-top:10px;"><br>
-  <button onclick="saveBrand()">Save Brand</button>
-</div>
+    <div class="section">
+      <h2>Add Assessment Question</h2>
+      <label>Question</label>
+      <input type="text" id="questionInput" />
+      <label>Option A</label>
+      <input type="text" id="optA" />
+      <label>Option B</label>
+      <input type="text" id="optB" />
+      <label>Option C</label>
+      <input type="text" id="optC" />
+      <label>Option D</label>
+      <input type="text" id="optD" />
+      <label>Correct Option (A/B/C/D)</label>
+      <input type="text" id="correct" maxlength="1" />
+      <button onclick="submitQuestion()">Add Question</button>
 
-<!-- Certificate Pricing -->
-<div class="section">
-  <h2>💰 Certificate Pricing</h2>
-  <input type="number" id="price" placeholder="Discounted Price (e.g. 149)">
-  <input type="number" id="originalPrice" placeholder="Original Price (e.g. 249)">
-  <button onclick="savePrice()">Save Pricing</button>
-</div>
-<!-- Question Manager -->
-<div class="section">
-  <h2>📘 Add/Edit Questions</h2>
-  <input id="qtext" placeholder="Enter Question"><br>
-  <input id="a" placeholder="Option A"><br>
-  <input id="b" placeholder="Option B"><br>
-  <input id="c" placeholder="Option C"><br>
-  <input id="d" placeholder="Option D"><br>
-  <select id="correct">
-    <option value="">Select Correct Answer</option>
-    <option value="a">A</option>
-    <option value="b">B</option>
-    <option value="c">C</option>
-    <option value="d">D</option>
-  </select><br>
-  <button onclick="submitQuestion()" id="submitBtn">Add Question</button>
-  <ul id="questionList"></ul>
-</div>
+      <div id="questionList"></div>
+    </div>
 
-<!-- Paid Users -->
-<div class="section">
-  <h2>📋 Paid Users</h2>
-  <ul id="userList"></ul>
-</div>
+    <div class="section">
+      <h2>Paid Users</h2>
+      <div id="paidUsersList">Loading...</div>
+    </div>
 
+    <footer>
+      Contact: <a href="mailto:royalmanagement02@gmail.com">royalmanagement02@gmail.com</a>
+    </footer>
 <script>
-  // Brand + Logo
-  function saveBrand() {
-    const name = document.getElementById("brandName").value;
-    const logo = document.getElementById("logoPreview").src;
-    localStorage.setItem("brandName", name);
-    localStorage.setItem("brandLogo", logo);
-    alert("✅ Brand info saved!");
-  }
+const github = {
+  username: "mayankchavan13",
+  repo: "MeckTech-site-admin",
+  token: "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", // 🔁 REPLACE this with your GitHub token
+  filePath: "questions.json"
+};
 
-  function previewLogo() {
-    const file = document.getElementById("logoUpload").files[0];
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      document.getElementById("logoPreview").src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
+let editingIndex = -1;
+let questionData = [];
 
-  function loadBrand() {
-    document.getElementById("brandName").value = localStorage.getItem("brandName") || "";
-    const logo = localStorage.getItem("brandLogo");
-    if (logo) document.getElementById("logoPreview").src = logo;
-  }
-
-  // Pricing
-  function savePrice() {
-    const price = document.getElementById("price").value;
-    const original = document.getElementById("originalPrice").value;
-    localStorage.setItem("certificatePrice", price);
-    localStorage.setItem("originalPrice", original);
-    alert("✅ Price saved!");
-  }
-
-  function loadPrice() {
-    document.getElementById("price").value = localStorage.getItem("certificatePrice") || "";
-    document.getElementById("originalPrice").value = localStorage.getItem("originalPrice") || "";
-  }
-  // Questions
-  let questions = JSON.parse(localStorage.getItem("questions")) || [];
-  let editingIndex = null;
-
-  function renderQuestions() {
-    const list = document.getElementById("questionList");
-    list.innerHTML = "";
-    questions.forEach((q, index) => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        <strong>Q${index + 1}:</strong> ${q.question}<br>
-        A) ${q.options.a}<br>
-        B) ${q.options.b}<br>
-        C) ${q.options.c}<br>
-        D) ${q.options.d}<br>
-        ✅ Correct: ${q.correct}<br>
-        <button onclick="editQuestion(${index})">✏️ Edit</button>
-        <button onclick="deleteQuestion(${index})" style="background:red;">🗑️ Delete</button>
-      `;
-      list.appendChild(li);
-    });
-  }
-
-  function submitQuestion() {
-    const q = document.getElementById("qtext").value.trim();
-    const a = document.getElementById("a").value.trim();
-    const b = document.getElementById("b").value.trim();
-    const c = document.getElementById("c").value.trim();
-    const d = document.getElementById("d").value.trim();
-    const correct = document.getElementById("correct").value;
-
-    if (!q || !a || !b || !c || !d || !correct) {
-      return alert("⚠️ Please fill all fields");
-    }
-
-    const question = {
-      question: q,
-      options: { a, b, c, d },
-      correct
-    };
-
-    if (editingIndex !== null) {
-      questions[editingIndex] = question;
-      editingIndex = null;
-      document.getElementById("submitBtn").innerText = "Add Question";
-    } else {
-      questions.push(question);
-    }
-
-    localStorage.setItem("questions", JSON.stringify(questions));
+async function fetchQuestions() {
+  const api = `https://raw.githubusercontent.com/${github.username}/${github.repo}/main/${github.filePath}`;
+  try {
+    const res = await fetch(api);
+    const data = await res.json();
+    questionData = data;
     renderQuestions();
-    resetForm();
+  } catch (err) {
+    console.error("Error loading questions:", err);
+    questionData = [];
+  }
+}
+
+function renderQuestions() {
+  const container = document.getElementById("questionList");
+  container.innerHTML = "";
+  questionData.forEach((q, i) => {
+    const box = document.createElement("div");
+    box.className = "question-box";
+    box.innerHTML = `
+      <b>Q${i + 1}:</b> ${q.question}
+      <small>A: ${q.options[0]} | B: ${q.options[1]} | C: ${q.options[2]} | D: ${q.options[3]}</small>
+      <small>Correct: ${q.correct}</small>
+      <div class="actions">
+        <button onclick="editQuestion(${i})">✏️ Edit</button>
+        <button onclick="deleteQuestion(${i})">🗑️ Delete</button>
+      </div>
+    `;
+    container.appendChild(box);
+  });
+}
+
+function submitQuestion() {
+  const question = document.getElementById("questionInput").value.trim();
+  const optA = document.getElementById("optA").value.trim();
+  const optB = document.getElementById("optB").value.trim();
+  const optC = document.getElementById("optC").value.trim();
+  const optD = document.getElementById("optD").value.trim();
+  const correct = document.getElementById("correct").value.toUpperCase();
+
+  if (!question || !optA || !optB || !optC || !optD || !["A", "B", "C", "D"].includes(correct)) {
+    alert("Please fill all fields correctly.");
+    return;
   }
 
-  function resetForm() {
-    document.getElementById("qtext").value = "";
-    document.getElementById("a").value = "";
-    document.getElementById("b").value = "";
-    document.getElementById("c").value = "";
-    document.getElementById("d").value = "";
-    document.getElementById("correct").value = "";
-  }
-
-  function deleteQuestion(index) {
-    if (confirm("Are you sure you want to delete this question?")) {
-      questions.splice(index, 1);
-      localStorage.setItem("questions", JSON.stringify(questions));
-      renderQuestions();
-    }
-  }
-
-  function editQuestion(index) {
-    const q = questions[index];
-    document.getElementById("qtext").value = q.question;
-    document.getElementById("a").value = q.options.a;
-    document.getElementById("b").value = q.options.b;
-    document.getElementById("c").value = q.options.c;
-    document.getElementById("d").value = q.options.d;
-    document.getElementById("correct").value = q.correct;
-    editingIndex = index;
-    document.getElementById("submitBtn").innerText = "Update Question";
-  }
-
-  // Paid Users
-  function renderUsers() {
-    const users = JSON.parse(localStorage.getItem("paidUsers")) || [];
-    const list = document.getElementById("userList");
-    list.innerHTML = "";
-    users.forEach(u => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        👤 <strong>${u.name}</strong><br>
-        📧 ${u.email}<br>
-        🧠 Score: ${u.score}/20
-      `;
-      list.appendChild(li);
-    });
-  }
-
-  // Load Everything
-  window.onload = () => {
-    loadBrand();
-    loadPrice();
-    renderQuestions();
-    renderUsers();
+  const newQuestion = {
+    question,
+    options: [optA, optB, optC, optD],
+    correct
   };
-</script>
 
+  if (editingIndex >= 0) {
+    questionData[editingIndex] = newQuestion;
+    editingIndex = -1;
+  } else {
+    questionData.push(newQuestion);
+  }
+
+  document.getElementById("questionInput").value = "";
+  document.getElementById("optA").value = "";
+  document.getElementById("optB").value = "";
+  document.getElementById("optC").value = "";
+  document.getElementById("optD").value = "";
+  document.getElementById("correct").value = "";
+
+  saveQuestionsToGitHub(questionData);
+  renderQuestions();
+}
+
+function editQuestion(index) {
+  const q = questionData[index];
+  document.getElementById("questionInput").value = q.question;
+  document.getElementById("optA").value = q.options[0];
+  document.getElementById("optB").value = q.options[1];
+  document.getElementById("optC").value = q.options[2];
+  document.getElementById("optD").value = q.options[3];
+  document.getElementById("correct").value = q.correct;
+  editingIndex = index;
+}
+
+function deleteQuestion(index) {
+  if (confirm("Delete this question?")) {
+    questionData.splice(index, 1);
+    saveQuestionsToGitHub(questionData);
+    renderQuestions();
+  }
+}
+
+async function saveQuestionsToGitHub(questions) {
+  const api = `https://api.github.com/repos/${github.username}/${github.repo}/contents/${github.filePath}`;
+  const content = btoa(JSON.stringify(questions, null, 2));
+
+  let sha = "";
+  try {
+    const res = await fetch(api, {
+      headers: {
+        Authorization: `token ${github.token}`,
+        Accept: "application/vnd.github+json"
+      }
+    });
+    const data = await res.json();
+    sha = data.sha;
+  } catch {}
+
+  await fetch(api, {
+    method: "PUT",
+    headers: {
+      Authorization: `token ${github.token}`,
+      Accept: "application/vnd.github+json"
+    },
+    body: JSON.stringify({
+      message: "Update questions",
+      content,
+      sha
+    })
+  });
+}
+</script>
+<script>
+function saveLogoAndName() {
+  const logoInput = document.getElementById("logoInput");
+  const reader = new FileReader();
+  reader.onload = function () {
+    const dataURL = reader.result;
+    localStorage.setItem("companyLogo", dataURL);
+    document.getElementById("companyLogo").src = dataURL;
+    document.getElementById("companyLogo").style.display = "inline-block";
+  };
+  if (logoInput.files[0]) {
+    reader.readAsDataURL(logoInput.files[0]);
+  }
+
+  const name = document.getElementById("nameInput").value.trim();
+  if (name) {
+    localStorage.setItem("companyName", name);
+    document.getElementById("companyName").innerText = name;
+  }
+}
+
+function savePrice() {
+  const original = document.getElementById("originalPrice").value.trim();
+  const discount = document.getElementById("discountedPrice").value.trim();
+  if (original && discount && parseInt(discount) < parseInt(original)) {
+    localStorage.setItem("priceInfo", JSON.stringify({ original, discount }));
+    alert("Price updated successfully.");
+  } else {
+    alert("Please enter valid pricing.");
+  }
+}
+
+async function fetchPaidUsers() {
+  try {
+    const res = await fetch("../paid_users.json");
+    const users = await res.json();
+    const container = document.getElementById("paidUsersList");
+    container.innerHTML = "";
+
+    users.forEach(u => {
+      const div = document.createElement("div");
+      div.className = "question-box";
+      div.innerHTML = `<b>${u.name}</b> | ${u.email} | Score: ${u.score}`;
+      container.appendChild(div);
+    });
+  } catch {
+    document.getElementById("paidUsersList").innerText = "No users found.";
+  }
+}
+
+window.onload = () => {
+  fetchQuestions();
+  fetchPaidUsers();
+
+  const savedLogo = localStorage.getItem("companyLogo");
+  const savedName = localStorage.getItem("companyName");
+
+  if (savedLogo) {
+    document.getElementById("companyLogo").src = savedLogo;
+    document.getElementById("companyLogo").style.display = "inline-block";
+  }
+
+  if (savedName) {
+    document.getElementById("companyName").innerText = savedName;
+  }
+};
+</script>
 </body>
 </html>
