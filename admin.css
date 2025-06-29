@@ -1,0 +1,28 @@
+body {
+    background: #0f0f0f;
+    color: #00f0ff;
+    font-family: Arial;
+    padding: 20px;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+  }
+  input, textarea {
+    width: 100%;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  button {
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #00f0ff;
+    color: black;
+    border: none;
+    cursor: pointer;
+  }
+  ul {
+    color: white;
+  }
+  

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MeckTech Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="container">
+    <h1>MeckTech Admin Panel</h1>
+
+    <h2>🖼️ Upload Logo</h2>
+    <input type="file" id="logoUpload" accept="image/*">
+    <p id="logoStatus">No logo uploaded</p>
+
+    <h2>🏷️ Company Name</h2>
+    <input type="text" id="companyName" placeholder="MeckTech">
+    <button onclick="saveName()">Save Name</button>
+
+    <h2>❓ Manage Questions</h2>
+    <textarea id="questionText" placeholder="Enter your question"></textarea>
+    <input type="text" placeholder="Option A" id="opt1">
+    <input type="text" placeholder="Option B" id="opt2">
+    <input type="text" placeholder="Option C" id="opt3">
+    <input type="text" placeholder="Option D" id="opt4">
+    <input type="number" placeholder="Correct Option (1-4)" id="correct">
+    <button onclick="addQuestion()">Add Question</button>
+
+    <h2>💰 Certificate Price</h2>
+    <input type="number" id="price" placeholder="149">
+    <button onclick="savePrice()">Save Price</button>
+
+    <h2>✅ Paid Users</h2>
+    <ul id="paidList"></ul>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
