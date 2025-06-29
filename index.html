@@ -4,6 +4,11 @@
   <title>MeckTech Admin</title>
   <link rel="stylesheet" href="admin.css">
 </head>
+  <script>
+  if (localStorage.getItem("adminAuth") !== "true") {
+    window.location.href = "login.html";
+  }
+</script>
 <body>
   <div class="container">
     <h1>MeckTech Admin Panel</h1>
