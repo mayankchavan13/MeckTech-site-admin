@@ -84,7 +84,7 @@
 
   <div class="section">
     <h2>📋 All Questions</h2>
-    <div id="questionsList"></div>
+    <div id="questionsList">Loading...</div>
   </div>
 
   <div class="section">
@@ -113,15 +113,22 @@
     function saveBranding() {
       const file = document.getElementById("logoFile").files[0];
       const name = document.getElementById("companyName").value;
-      if (!file || !name) return alert("Please select a logo and enter company name.");
 
-      const ref = storage.ref("logo/" + file.name);
-      ref.put(file).then(snapshot => {
+      if (!file || !name) {
+        alert("Please select a logo and enter a company name.");
+        return;
+      }
+
+      const storageRef = storage.ref("logo/" + Date.now() + "_" + file.name);
+      storageRef.put(file).then(snapshot => {
         snapshot.ref.getDownloadURL().then(url => {
-          db.ref("branding").set({ name, logo: url });
-          alert("Branding updated successfully.");
+          db.ref("branding").set({ name, logo: url })
+            .then(() => alert("Branding saved successfully!"))
+            .catch(err => alert("Error saving branding: " + err.message));
         });
-      }).catch(err => alert("Error uploading logo: " + err.message));
+      }).catch(error => {
+        alert("Error uploading logo: " + error.message);
+      });
     }
 
     function setPrice() {
@@ -153,6 +160,7 @@
       document.getElementById("opt3").value = "";
       document.getElementById("opt4").value = "";
       document.getElementById("correctOption").value = "";
+      renderQuestions();
     }
 
     function renderQuestions() {
@@ -209,7 +217,6 @@
       });
     }
 
-    // Auto load
     renderQuestions();
     loadPaidUsers();
   </script>
