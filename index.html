@@ -1,251 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
   <title>MeckTech Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
     body {
       background: #0d1117;
-      color: #f0f6fc;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
+      color: white;
+      font-family: Arial;
       padding: 20px;
     }
-    h1, h2 { color: #58a6ff; }
-    label { display: block; margin-top: 10px; }
-    input, select, textarea {
+    input, select, button {
+      padding: 10px;
+      margin: 8px 0;
       width: 100%;
-      padding: 8px;
-      margin: 5px 0 15px;
-      background: #161b22;
-      border: 1px solid #30363d;
-      color: white;
-      border-radius: 5px;
-    }
-    button {
-      background: #238636;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-right: 10px;
+      max-width: 400px;
     }
     .section {
-      background: #161b22;
-      padding: 20px;
-      margin-bottom: 30px;
-      border-radius: 10px;
-    }
-    .question-item {
-      margin-bottom: 15px;
-      padding: 10px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-    }
-    .question-item button {
-      background: #da3633;
-      margin-top: 5px;
-    }
-    .paid-user {
-      background: #161b22;
-      padding: 10px;
-      margin-bottom: 8px;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-    }
-    footer {
       margin-top: 30px;
-      font-size: 14px;
-      color: #8b949e;
-      text-align: center;
+      border-top: 1px solid #333;
+      padding-top: 20px;
+    }
+    .hidden { display: none; }
+    .logout-btn {
+      background: #c62828;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      float: right;
     }
   </style>
 </head>
 <body>
+  <h1>🛠️ MeckTech Admin Panel</h1>
+  <button class="logout-btn hidden" onclick="logout()">Logout</button>
 
-  <h1>MeckTech Admin Panel</h1>
-
-  <div class="section">
-    <h2>🖼️ Branding</h2>
-    <label>Company Name:</label>
-    <input type="text" id="companyName" />
-    <label>Logo Image URL:</label>
-    <input type="text" id="logoURL" placeholder="Paste direct image link" />
-    <button onclick="saveBranding()">Save Branding</button>
+  <!-- Login Form -->
+  <div id="loginForm">
+    <h3>Admin Login</h3>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
   </div>
 
-  <div class="section">
-    <h2>💰 Certificate Price</h2>
-    <label>Original Price (₹):</label>
-    <input type="number" id="originalPrice" />
-    <label>Discounted Price (₹):</label>
-    <input type="number" id="discountPrice" />
-    <button onclick="savePrice()">Save Price</button>
+  <!-- Admin Dashboard -->
+  <div id="adminPanel" class="hidden">
+    <!-- Branding -->
+    <div class="section">
+      <h2>Branding</h2>
+      <input type="text" id="companyName" placeholder="Company Name" />
+      <input type="text" id="logoURL" placeholder="Logo Image URL" />
+      <button onclick="saveBranding()">Save Branding</button>
+    </div>
+
+    <!-- Price Control -->
+    <div class="section">
+      <h2>Certificate Price</h2>
+      <input type="number" id="originalPrice" placeholder="Original Price" />
+      <input type="number" id="discountPrice" placeholder="Discounted Price" />
+      <button onclick="savePrice()">Save Price</button>
+    </div>
+
+    <!-- Question Manager -->
+    <div class="section">
+      <h2>Questions</h2>
+      <input type="text" id="questionText" placeholder="Question" />
+      <input type="text" id="opt1" placeholder="Option 1" />
+      <input type="text" id="opt2" placeholder="Option 2" />
+      <input type="text" id="opt3" placeholder="Option 3" />
+      <input type="text" id="opt4" placeholder="Option 4" />
+      <select id="correctOption">
+        <option value="0">Correct: Option 1</option>
+        <option value="1">Correct: Option 2</option>
+        <option value="2">Correct: Option 3</option>
+        <option value="3">Correct: Option 4</option>
+      </select>
+      <button onclick="addQuestion()">Add Question</button>
+      <div id="questionsList"></div>
+    </div>
+
+    <!-- Paid Users -->
+    <div class="section">
+      <h2>Paid Users</h2>
+      <div id="paidUsersList">Loading...</div>
+    </div>
+
+    <!-- Contact Email -->
+    <div class="section">
+      <h4>Contact: royalmanagement02@gmail.com</h4>
+    </div>
   </div>
 
-  <div class="section">
-    <h2>🧠 Add New Question</h2>
-    <label>Question Text:</label>
-    <input type="text" id="questionText" />
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDg6hedgJB7nK3xVvIrxg04ouFVTkIHe2k",
+      authDomain: "mecktech-bbc2e.firebaseapp.com",
+      databaseURL: "https://mecktech-bbc2e-default-rtdb.firebaseio.com",
+      projectId: "mecktech-bbc2e",
+      storageBucket: "mecktech-bbc2e.appspot.com",
+      messagingSenderId: "790927325648",
+      appId: "1:790927325648:web:9135f13e7dafba1f0b21d5"
+    };
 
-    <label>Option 1:</label>
-    <input type="text" id="option1" />
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    <label>Option 2:</label>
-    <input type="text" id="option2" />
-
-    <label>Option 3:</label>
-    <input type="text" id="option3" />
-
-    <label>Option 4:</label>
-    <input type="text" id="option4" />
-
-    <label>Correct Option:</label>
-    <select id="correctOption">
-      <option value="0">Option 1</option>
-      <option value="1">Option 2</option>
-      <option value="2">Option 3</option>
-      <option value="3">Option 4</option>
-    </select>
-
-    <button onclick="addQuestion()">Add Question</button>
-  </div>
-
-  <div class="section">
-    <h2>📄 Existing Questions</h2>
-    <div id="questionList">Loading...</div>
-  </div>
-
-  <div class="section">
-    <h2>✅ Paid Users</h2>
-    <div id="paidUsers">Loading...</div>
-  </div>
-
-  <footer>Contact: <a href="mailto:royalmanagement02@gmail.com" style="color:#58a6ff;">royalmanagement02@gmail.com</a></footer>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDg6hedgJB7nK3xVvIrxg04ouFVTkIHe2k",
-    authDomain: "mecktech-bbc2e.firebaseapp.com",
-    databaseURL: "https://mecktech-bbc2e-default-rtdb.firebaseio.com",
-    projectId: "mecktech-bbc2e",
-    storageBucket: "mecktech-bbc2e.appspot.com",
-    messagingSenderId: "790927325648",
-    appId: "1:790927325648:web:9135f13e7dafba1f0b21d5"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // Branding
-  function saveBranding() {
-    const name = document.getElementById("companyName").value;
-    const logo = document.getElementById("logoURL").value;
-    db.ref("branding").set({ name, logo });
-    alert("Branding updated.");
-  }
-
-  db.ref("branding").on("value", snap => {
-    const data = snap.val();
-    if (data) {
-      document.getElementById("companyName").value = data.name || "";
-      document.getElementById("logoURL").value = data.logo || "";
-    }
-  });
-
-  // Price
-  function savePrice() {
-    const original = parseInt(document.getElementById("originalPrice").value);
-    const discount = parseInt(document.getElementById("discountPrice").value);
-    db.ref("price").set({ original, discount });
-    alert("Price updated.");
-  }
-
-  db.ref("price").on("value", snap => {
-    const data = snap.val();
-    if (data) {
-      document.getElementById("originalPrice").value = data.original || "";
-      document.getElementById("discountPrice").value = data.discount || "";
-    }
-  });
-
-  // Add question
-  function addQuestion() {
-    const text = document.getElementById("questionText").value;
-    const options = [
-      document.getElementById("option1").value,
-      document.getElementById("option2").value,
-      document.getElementById("option3").value,
-      document.getElementById("option4").value
-    ];
-    const correct = parseInt(document.getElementById("correctOption").value);
-
-    if (!text || options.some(o => !o) || isNaN(correct)) {
-      return alert("Fill all fields correctly.");
+    // Login Function
+    function login() {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          showAdmin();
+        })
+        .catch(err => alert("Login failed: " + err.message));
     }
 
-    db.ref("questions").push({ text, options, correct });
+    function logout() {
+      auth.signOut().then(() => location.reload());
+    }
 
-    // Clear form
-    document.getElementById("questionText").value = "";
-    document.getElementById("option1").value = "";
-    document.getElementById("option2").value = "";
-    document.getElementById("option3").value = "";
-    document.getElementById("option4").value = "";
-    document.getElementById("correctOption").value = "0";
-  }
-
-  function loadQuestions() {
-    db.ref("questions").on("value", snap => {
-      const data = snap.val();
-      const qDiv = document.getElementById("questionList");
-      qDiv.innerHTML = "";
-      if (data) {
-        Object.entries(data).forEach(([id, q]) => {
-          const div = document.createElement("div");
-          div.className = "question-item";
-          div.innerHTML = `
-            <strong>${q.text}</strong><br/>
-            <ol>${q.options.map(o => `<li>${o}</li>`).join("")}</ol>
-            <small>Correct Option: ${q.options[q.correct]}</small><br/>
-            <button onclick="deleteQuestion('${id}')">Delete</button>
-          `;
-          qDiv.appendChild(div);
-        });
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        showAdmin();
       } else {
-        qDiv.innerHTML = "<p>No questions added yet.</p>";
+        document.getElementById("loginForm").classList.remove("hidden");
+        document.getElementById("adminPanel").classList.add("hidden");
+        document.querySelector(".logout-btn").classList.add("hidden");
       }
     });
-  }
 
-  function deleteQuestion(id) {
-    if (confirm("Delete this question?")) {
-      db.ref("questions").child(id).remove();
+    function showAdmin() {
+      document.getElementById("loginForm").classList.add("hidden");
+      document.getElementById("adminPanel").classList.remove("hidden");
+      document.querySelector(".logout-btn").classList.remove("hidden");
+      loadBranding();
+      loadPrice();
+      loadQuestions();
+      loadPaidUsers();
     }
-  }
 
-  loadQuestions();
+    function saveBranding() {
+      const name = document.getElementById("companyName").value;
+      const logo = document.getElementById("logoURL").value;
+      db.ref("branding").set({ name, logo });
+      alert("Branding Saved!");
+    }
 
-  db.ref("paid_users").on("value", snap => {
-    const data = snap.val();
-    const pDiv = document.getElementById("paidUsers");
-    pDiv.innerHTML = "";
-    if (data) {
-      Object.values(data).forEach(u => {
-        const div = document.createElement("div");
-        div.className = "paid-user";
-        div.innerHTML = `<strong>${u.name}</strong><br/>📧 ${u.email}<br/>🏆 Score: ${u.score}`;
-        pDiv.appendChild(div);
+    function loadBranding() {
+      db.ref("branding").once("value", snap => {
+        const b = snap.val();
+        if (b) {
+          document.getElementById("companyName").value = b.name || "";
+          document.getElementById("logoURL").value = b.logo || "";
+        }
       });
-    } else {
-      pDiv.innerHTML = "<p>No users yet.</p>";
     }
-  });
-</script>
+
+    function savePrice() {
+      const original = parseInt(document.getElementById("originalPrice").value);
+      const discount = parseInt(document.getElementById("discountPrice").value);
+      db.ref("price").set({ original, discount });
+      alert("Price updated!");
+    }
+
+    function loadPrice() {
+      db.ref("price").once("value", snap => {
+        const p = snap.val();
+        if (p) {
+          document.getElementById("originalPrice").value = p.original || "";
+          document.getElementById("discountPrice").value = p.discount || "";
+        }
+      });
+    }
+
+    function addQuestion() {
+      const text = document.getElementById("questionText").value;
+      const options = [
+        document.getElementById("opt1").value,
+        document.getElementById("opt2").value,
+        document.getElementById("opt3").value,
+        document.getElementById("opt4").value
+      ];
+      const correct = document.getElementById("correctOption").value;
+
+      const newQ = db.ref("questions").push();
+      newQ.set({ text, options, correct });
+      alert("Question Added!");
+      loadQuestions();
+    }
+
+    function loadQuestions() {
+      db.ref("questions").once("value", snap => {
+        const list = document.getElementById("questionsList");
+        list.innerHTML = "";
+        snap.forEach(q => {
+          const data = q.val();
+          list.innerHTML += `
+            <div style="margin-top:10px; padding:10px; background:#161b22; border-radius:5px">
+              <b>${data.text}</b><br>
+              ${data.options.map((opt, i) => `<div>${i + 1}. ${opt}${i == data.correct ? " ✅" : ""}</div>`).join("")}
+              <button onclick="deleteQuestion('${q.key}')">Delete</button>
+            </div>
+          `;
+        });
+      });
+    }
+
+    function deleteQuestion(key) {
+      if (confirm("Delete this question?")) {
+        db.ref("questions/" + key).remove();
+        loadQuestions();
+      }
+    }
+
+    function loadPaidUsers() {
+      db.ref("paid_users").once("value", snap => {
+        const list = document.getElementById("paidUsersList");
+        list.innerHTML = "";
+        snap.forEach(user => {
+          const data = user.val();
+          list.innerHTML += `<div>${data.name} - ${data.email} - Score: ${data.score}</div>`;
+        });
+      });
+    }
+  </script>
 </body>
 </html>
