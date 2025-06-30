@@ -1,199 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>MeckTech Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <style>
     body {
       background: #0d1117;
       color: #f0f6fc;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
       padding: 20px;
     }
-    h2 { color: #58a6ff; }
-    input, select, button, textarea {
+    h1, h2 { color: #58a6ff; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 8px;
+      margin: 5px 0 15px;
       background: #161b22;
       border: 1px solid #30363d;
-      color: #f0f6fc;
+      color: white;
       border-radius: 5px;
     }
     button {
-      background-color: #238636;
-      cursor: pointer;
+      background: #238636;
+      color: white;
+      padding: 10px 15px;
       border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
     }
-    .question-box {
+    .section {
       background: #161b22;
-      padding: 15px;
-      margin-top: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+    }
+    .question-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
       border-radius: 8px;
     }
-    .question-box button {
-      background-color: #da3633;
-      margin-right: 5px;
+    .question-item button {
+      background: #da3633;
+      margin-top: 5px;
     }
-    .edit-btn {
-      background-color: #d29922;
+    .paid-user {
+      background: #161b22;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #8b949e;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <h1>⚙️ MeckTech Admin Panel</h1>
+  <h1>MeckTech Admin Panel</h1>
 
-  <h2>Branding</h2>
-  <input type="text" id="companyName" placeholder="Enter Company Name">
-  <input type="text" id="logoURL" placeholder="Enter Logo Image URL">
-  <button onclick="saveBranding()">Save Branding</button>
+  <div class="section">
+    <h2>🖼️ Branding</h2>
+    <label>Company Name:</label>
+    <input type="text" id="companyName" />
+    <label>Logo Image URL:</label>
+    <input type="text" id="logoURL" placeholder="Paste direct image link" />
+    <button onclick="saveBranding()">Save Branding</button>
+  </div>
 
-  <h2>Set Certificate Price</h2>
-  <input type="number" id="originalPrice" placeholder="Original Price (e.g. 249)">
-  <input type="number" id="discountPrice" placeholder="Discounted Price (e.g. 149)">
-  <button onclick="savePrice()">Save Price</button>
+  <div class="section">
+    <h2>💰 Certificate Price</h2>
+    <label>Original Price (₹):</label>
+    <input type="number" id="originalPrice" />
+    <label>Discounted Price (₹):</label>
+    <input type="number" id="discountPrice" />
+    <button onclick="savePrice()">Save Price</button>
+  </div>
 
-  <h2>Add New Question</h2>
-  <input type="text" id="questionText" placeholder="Question">
-  <input type="text" id="opt1" placeholder="Option 1">
-  <input type="text" id="opt2" placeholder="Option 2">
-  <input type="text" id="opt3" placeholder="Option 3">
-  <input type="text" id="opt4" placeholder="Option 4">
-  <select id="correctAnswer">
-    <option value="">Select Correct Answer</option>
-    <option value="0">Option 1</option>
-    <option value="1">Option 2</option>
-    <option value="2">Option 3</option>
-    <option value="3">Option 4</option>
-  </select>
-  <button onclick="addQuestion()">Add Question</button>
+  <div class="section">
+    <h2>🧠 Add New Question</h2>
+    <label>Question Text:</label>
+    <input type="text" id="questionText" />
 
-  <h2>Saved Questions</h2>
-  <div id="questionList"></div>
+    <label>Option 1:</label>
+    <input type="text" id="option1" />
 
-  <h2>Paid Users</h2>
-  <div id="paidUsers"></div>
+    <label>Option 2:</label>
+    <input type="text" id="option2" />
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDg6hedgJB7nK3xVvIrxg04ouFVTkIHe2k",
-      authDomain: "mecktech-bbc2e.firebaseapp.com",
-      databaseURL: "https://mecktech-bbc2e-default-rtdb.firebaseio.com",
-      projectId: "mecktech-bbc2e",
-      storageBucket: "mecktech-bbc2e.appspot.com",
-      messagingSenderId: "790927325648",
-      appId: "1:790927325648:web:9135f13e7dafba1f0b21d5"
-    };
+    <label>Option 3:</label>
+    <input type="text" id="option3" />
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <label>Option 4:</label>
+    <input type="text" id="option4" />
 
-    // Save branding
-    function saveBranding() {
-      const name = document.getElementById("companyName").value.trim();
-      const logo = document.getElementById("logoURL").value.trim();
-      if (name && logo) {
-        db.ref("branding").set({ name, logo });
-        alert("Branding updated!");
-      } else {
-        alert("Please fill both name and logo URL.");
-      }
+    <label>Correct Option:</label>
+    <select id="correctOption">
+      <option value="0">Option 1</option>
+      <option value="1">Option 2</option>
+      <option value="2">Option 3</option>
+      <option value="3">Option 4</option>
+    </select>
+
+    <button onclick="addQuestion()">Add Question</button>
+  </div>
+
+  <div class="section">
+    <h2>📄 Existing Questions</h2>
+    <div id="questionList">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h2>✅ Paid Users</h2>
+    <div id="paidUsers">Loading...</div>
+  </div>
+
+  <footer>Contact: <a href="mailto:royalmanagement02@gmail.com" style="color:#58a6ff;">royalmanagement02@gmail.com</a></footer>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDg6hedgJB7nK3xVvIrxg04ouFVTkIHe2k",
+    authDomain: "mecktech-bbc2e.firebaseapp.com",
+    databaseURL: "https://mecktech-bbc2e-default-rtdb.firebaseio.com",
+    projectId: "mecktech-bbc2e",
+    storageBucket: "mecktech-bbc2e.appspot.com",
+    messagingSenderId: "790927325648",
+    appId: "1:790927325648:web:9135f13e7dafba1f0b21d5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Branding
+  function saveBranding() {
+    const name = document.getElementById("companyName").value;
+    const logo = document.getElementById("logoURL").value;
+    db.ref("branding").set({ name, logo });
+    alert("Branding updated.");
+  }
+
+  db.ref("branding").on("value", snap => {
+    const data = snap.val();
+    if (data) {
+      document.getElementById("companyName").value = data.name || "";
+      document.getElementById("logoURL").value = data.logo || "";
+    }
+  });
+
+  // Price
+  function savePrice() {
+    const original = parseInt(document.getElementById("originalPrice").value);
+    const discount = parseInt(document.getElementById("discountPrice").value);
+    db.ref("price").set({ original, discount });
+    alert("Price updated.");
+  }
+
+  db.ref("price").on("value", snap => {
+    const data = snap.val();
+    if (data) {
+      document.getElementById("originalPrice").value = data.original || "";
+      document.getElementById("discountPrice").value = data.discount || "";
+    }
+  });
+
+  // Add question
+  function addQuestion() {
+    const text = document.getElementById("questionText").value;
+    const options = [
+      document.getElementById("option1").value,
+      document.getElementById("option2").value,
+      document.getElementById("option3").value,
+      document.getElementById("option4").value
+    ];
+    const correct = parseInt(document.getElementById("correctOption").value);
+
+    if (!text || options.some(o => !o) || isNaN(correct)) {
+      return alert("Fill all fields correctly.");
     }
 
-    // Save price
-    function savePrice() {
-      const original = document.getElementById("originalPrice").value.trim();
-      const discount = document.getElementById("discountPrice").value.trim();
-      if (original && discount) {
-        db.ref("price").set({ original, discount });
-        alert("Price updated!");
-      } else {
-        alert("Please enter both prices.");
-      }
-    }
+    db.ref("questions").push({ text, options, correct });
 
-    // Add new question
-    function addQuestion() {
-      const text = document.getElementById("questionText").value.trim();
-      const options = [
-        document.getElementById("opt1").value.trim(),
-        document.getElementById("opt2").value.trim(),
-        document.getElementById("opt3").value.trim(),
-        document.getElementById("opt4").value.trim()
-      ];
-      const correct = document.getElementById("correctAnswer").value;
+    // Clear form
+    document.getElementById("questionText").value = "";
+    document.getElementById("option1").value = "";
+    document.getElementById("option2").value = "";
+    document.getElementById("option3").value = "";
+    document.getElementById("option4").value = "";
+    document.getElementById("correctOption").value = "0";
+  }
 
-      if (text && options.every(o => o) && correct !== "") {
-        db.ref("questions").push({ text, options, correct });
-        alert("Question added!");
-        clearForm();
-        loadQuestions();
-      } else {
-        alert("Please fill all fields and select the correct answer.");
-      }
-    }
-
-    // Clear question form
-    function clearForm() {
-      document.getElementById("questionText").value = "";
-      document.getElementById("opt1").value = "";
-      document.getElementById("opt2").value = "";
-      document.getElementById("opt3").value = "";
-      document.getElementById("opt4").value = "";
-      document.getElementById("correctAnswer").value = "";
-    }
-
-    // Load and render questions
-    function loadQuestions() {
-      db.ref("questions").once("value", snap => {
-        const container = document.getElementById("questionList");
-        container.innerHTML = "";
-        const data = snap.val();
-        if (!data) return;
+  function loadQuestions() {
+    db.ref("questions").on("value", snap => {
+      const data = snap.val();
+      const qDiv = document.getElementById("questionList");
+      qDiv.innerHTML = "";
+      if (data) {
         Object.entries(data).forEach(([id, q]) => {
           const div = document.createElement("div");
-          div.className = "question-box";
+          div.className = "question-item";
           div.innerHTML = `
-            <b>${q.text}</b>
-            <ol>
-              ${q.options.map((opt, i) => `
-                <li${i == q.correct ? ' style="color:#58a6ff;"' : ''}>${opt}</li>
-              `).join("")}
-            </ol>
+            <strong>${q.text}</strong><br/>
+            <ol>${q.options.map(o => `<li>${o}</li>`).join("")}</ol>
+            <small>Correct Option: ${q.options[q.correct]}</small><br/>
             <button onclick="deleteQuestion('${id}')">Delete</button>
           `;
-          container.appendChild(div);
+          qDiv.appendChild(div);
         });
-      });
-    }
-
-    function deleteQuestion(id) {
-      if (confirm("Are you sure you want to delete this question?")) {
-        db.ref("questions/" + id).remove();
-        loadQuestions();
+      } else {
+        qDiv.innerHTML = "<p>No questions added yet.</p>";
       }
-    }
+    });
+  }
 
-    // Load paid users
-    function loadPaidUsers() {
-      db.ref("paid_users").once("value", snap => {
-        const users = snap.val();
-        const div = document.getElementById("paidUsers");
-        div.innerHTML = "";
-        if (!users) return;
-        Object.values(users).forEach(user => {
-          div.innerHTML += `<p>${user.name} (${user.email}) - Score: ${user.score}</p>`;
-        });
+  function deleteQuestion(id) {
+    if (confirm("Delete this question?")) {
+      db.ref("questions").child(id).remove();
+    }
+  }
+
+  loadQuestions();
+
+  db.ref("paid_users").on("value", snap => {
+    const data = snap.val();
+    const pDiv = document.getElementById("paidUsers");
+    pDiv.innerHTML = "";
+    if (data) {
+      Object.values(data).forEach(u => {
+        const div = document.createElement("div");
+        div.className = "paid-user";
+        div.innerHTML = `<strong>${u.name}</strong><br/>📧 ${u.email}<br/>🏆 Score: ${u.score}`;
+        pDiv.appendChild(div);
       });
+    } else {
+      pDiv.innerHTML = "<p>No users yet.</p>";
     }
-
-    // Initial loads
-    loadQuestions();
-    loadPaidUsers();
-  </script>
-
+  });
+</script>
 </body>
 </html>
