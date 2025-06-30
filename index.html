@@ -16,7 +16,7 @@
     }
     h1, h2 { color: #58a6ff; }
     label { display: block; margin-top: 10px; }
-    input, textarea {
+    input, select, textarea {
       width: 100%;
       padding: 8px;
       margin: 5px 0 15px;
@@ -81,19 +81,38 @@
 
   <div class="section">
     <h2>💰 Certificate Price</h2>
-    <label>Current Price (₹):</label>
-    <input type="number" id="price" />
-    <button onclick="savePrice()">Update Price</button>
+    <label>Original Price (₹):</label>
+    <input type="number" id="originalPrice" />
+    <label>Discounted Price (₹):</label>
+    <input type="number" id="discountPrice" />
+    <button onclick="savePrice()">Save Price</button>
   </div>
 
   <div class="section">
     <h2>🧠 Add New Question</h2>
-    <label>Question:</label>
-    <textarea id="questionText"></textarea>
-    <label>Options (one per line):</label>
-    <textarea id="optionList"></textarea>
-    <label>Correct Option (0-based index):</label>
-    <input type="number" id="correctIndex" />
+    <label>Question Text:</label>
+    <input type="text" id="questionText" />
+
+    <label>Option 1:</label>
+    <input type="text" id="option1" />
+
+    <label>Option 2:</label>
+    <input type="text" id="option2" />
+
+    <label>Option 3:</label>
+    <input type="text" id="option3" />
+
+    <label>Option 4:</label>
+    <input type="text" id="option4" />
+
+    <label>Correct Option:</label>
+    <select id="correctOption">
+      <option value="0">Option 1</option>
+      <option value="1">Option 2</option>
+      <option value="2">Option 3</option>
+      <option value="3">Option 4</option>
+    </select>
+
     <button onclick="addQuestion()">Add Question</button>
   </div>
 
@@ -131,7 +150,6 @@
     alert("Branding updated.");
   }
 
-  // Load branding
   db.ref("branding").on("value", snap => {
     const data = snap.val();
     if (data) {
@@ -142,38 +160,46 @@
 
   // Price
   function savePrice() {
-    const price = document.getElementById("price").value;
-    db.ref("price").set({ price });
+    const original = parseInt(document.getElementById("originalPrice").value);
+    const discount = parseInt(document.getElementById("discountPrice").value);
+    db.ref("price").set({ original, discount });
     alert("Price updated.");
   }
 
   db.ref("price").on("value", snap => {
     const data = snap.val();
-    if (data && data.price) {
-      document.getElementById("price").value = data.price;
+    if (data) {
+      document.getElementById("originalPrice").value = data.original || "";
+      document.getElementById("discountPrice").value = data.discount || "";
     }
   });
 
   // Add question
   function addQuestion() {
     const text = document.getElementById("questionText").value;
-    const options = document.getElementById("optionList").value.split("\n");
-    const correct = parseInt(document.getElementById("correctIndex").value);
+    const options = [
+      document.getElementById("option1").value,
+      document.getElementById("option2").value,
+      document.getElementById("option3").value,
+      document.getElementById("option4").value
+    ];
+    const correct = parseInt(document.getElementById("correctOption").value);
 
-    if (!text || options.length < 2 || isNaN(correct)) {
+    if (!text || options.some(o => !o) || isNaN(correct)) {
       return alert("Fill all fields correctly.");
     }
 
-    const newQ = { text, options, correct };
-    db.ref("questions").push(newQ);
+    db.ref("questions").push({ text, options, correct });
 
     // Clear form
     document.getElementById("questionText").value = "";
-    document.getElementById("optionList").value = "";
-    document.getElementById("correctIndex").value = "";
+    document.getElementById("option1").value = "";
+    document.getElementById("option2").value = "";
+    document.getElementById("option3").value = "";
+    document.getElementById("option4").value = "";
+    document.getElementById("correctOption").value = "0";
   }
 
-  // Load questions
   function loadQuestions() {
     db.ref("questions").on("value", snap => {
       const data = snap.val();
@@ -186,7 +212,7 @@
           div.innerHTML = `
             <strong>${q.text}</strong><br/>
             <ol>${q.options.map(o => `<li>${o}</li>`).join("")}</ol>
-            <small>Correct Option: ${q.correct}</small><br/>
+            <small>Correct Option: ${q.options[q.correct]}</small><br/>
             <button onclick="deleteQuestion('${id}')">Delete</button>
           `;
           qDiv.appendChild(div);
@@ -205,7 +231,6 @@
 
   loadQuestions();
 
-  // Paid users
   db.ref("paid_users").on("value", snap => {
     const data = snap.val();
     const pDiv = document.getElementById("paidUsers");
