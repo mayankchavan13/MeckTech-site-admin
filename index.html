@@ -55,7 +55,7 @@
     <input type="text" id="companyName" placeholder="Enter Company Name" />
     <label>Upload Logo Image:</label>
     <input type="file" id="logoFile" accept="image/*" />
-    <button onclick="uploadLogo()">Upload Logo</button>
+    <button onclick="saveBranding()">Save Branding</button>
   </div>
 
   <div class="section">
@@ -110,10 +110,11 @@
     const db = firebase.database();
     const storage = firebase.storage();
 
-    function uploadLogo() {
+    function saveBranding() {
       const file = document.getElementById("logoFile").files[0];
       const name = document.getElementById("companyName").value;
-      if (!file || !name) return alert("Please provide both logo and company name.");
+      if (!file || !name) return alert("Please select a logo and enter company name.");
+
       const ref = storage.ref("logo/" + file.name);
       ref.put(file).then(snapshot => {
         snapshot.ref.getDownloadURL().then(url => {
