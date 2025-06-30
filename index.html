@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>MeckTech Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   <style>
     body {
       background: #0d1117;
@@ -14,87 +12,70 @@
       font-family: Arial, sans-serif;
       padding: 20px;
     }
-    input, select {
+    h2 { color: #58a6ff; }
+    input, select, button, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
       background: #161b22;
       border: 1px solid #30363d;
-      color: white;
-      padding: 8px;
-      margin-bottom: 10px;
-      width: 100%;
-    }
-    button {
-      background: #238636;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-    .section {
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #30363d;
-    }
-    .question {
-      background: #161b22;
-      padding: 10px;
-      margin-bottom: 10px;
+      color: #f0f6fc;
       border-radius: 5px;
     }
-    .actions {
-      display: flex;
-      gap: 10px;
+    button {
+      background-color: #238636;
+      cursor: pointer;
+      border: none;
+    }
+    .question-box {
+      background: #161b22;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+    .question-box button {
+      background-color: #da3633;
+      margin-right: 5px;
+    }
+    .edit-btn {
+      background-color: #d29922;
     }
   </style>
 </head>
 <body>
-  <h1>🛠️ MeckTech Admin Panel</h1>
 
-  <div class="section">
-    <h2>🔧 Branding</h2>
-    <input type="text" id="companyName" placeholder="Enter Company Name" />
-    <label>Upload Logo Image:</label>
-    <input type="file" id="logoFile" accept="image/*" />
-    <button onclick="saveBranding()">Save Branding</button>
-  </div>
+  <h1>⚙️ MeckTech Admin Panel</h1>
 
-  <div class="section">
-    <h2>💰 Set Price (with Discount)</h2>
-    <input type="number" id="originalPrice" placeholder="Original Price (e.g. 249)" />
-    <input type="number" id="discountPrice" placeholder="Discounted Price (e.g. 149)" />
-    <button onclick="setPrice()">Save Price</button>
-  </div>
+  <h2>Branding</h2>
+  <input type="text" id="companyName" placeholder="Enter Company Name">
+  <input type="text" id="logoURL" placeholder="Enter Logo Image URL">
+  <button onclick="saveBranding()">Save Branding</button>
 
-  <div class="section">
-    <h2>📚 Add Question</h2>
-    <input type="text" id="questionText" placeholder="Enter question text" />
-    <input type="text" id="opt1" placeholder="Option 1" />
-    <input type="text" id="opt2" placeholder="Option 2" />
-    <input type="text" id="opt3" placeholder="Option 3" />
-    <input type="text" id="opt4" placeholder="Option 4" />
-    <select id="correctOption">
-      <option value="">Select Correct Option</option>
-      <option value="0">Option 1</option>
-      <option value="1">Option 2</option>
-      <option value="2">Option 3</option>
-      <option value="3">Option 4</option>
-    </select>
-    <button onclick="addQuestion()">Add Question</button>
-  </div>
+  <h2>Set Certificate Price</h2>
+  <input type="number" id="originalPrice" placeholder="Original Price (e.g. 249)">
+  <input type="number" id="discountPrice" placeholder="Discounted Price (e.g. 149)">
+  <button onclick="savePrice()">Save Price</button>
 
-  <div class="section">
-    <h2>📋 All Questions</h2>
-    <div id="questionsList">Loading...</div>
-  </div>
+  <h2>Add New Question</h2>
+  <input type="text" id="questionText" placeholder="Question">
+  <input type="text" id="opt1" placeholder="Option 1">
+  <input type="text" id="opt2" placeholder="Option 2">
+  <input type="text" id="opt3" placeholder="Option 3">
+  <input type="text" id="opt4" placeholder="Option 4">
+  <select id="correctAnswer">
+    <option value="">Select Correct Answer</option>
+    <option value="0">Option 1</option>
+    <option value="1">Option 2</option>
+    <option value="2">Option 3</option>
+    <option value="3">Option 4</option>
+  </select>
+  <button onclick="addQuestion()">Add Question</button>
 
-  <div class="section">
-    <h2>✅ Paid Users</h2>
-    <div id="paidUsersList">Loading...</div>
-  </div>
+  <h2>Saved Questions</h2>
+  <div id="questionList"></div>
 
-  <footer style="margin-top: 40px; text-align: center; font-size: 14px; color: gray;">
-    Contact us: <a href="mailto:royalmanagement02@gmail.com" style="color: #58a6ff;">royalmanagement02@gmail.com</a>
-  </footer>
+  <h2>Paid Users</h2>
+  <div id="paidUsers"></div>
 
   <script>
     const firebaseConfig = {
@@ -106,119 +87,113 @@
       messagingSenderId: "790927325648",
       appId: "1:790927325648:web:9135f13e7dafba1f0b21d5"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const storage = firebase.storage();
 
+    // Save branding
     function saveBranding() {
-      const file = document.getElementById("logoFile").files[0];
-      const name = document.getElementById("companyName").value;
-
-      if (!file || !name) {
-        alert("Please select a logo and enter a company name.");
-        return;
+      const name = document.getElementById("companyName").value.trim();
+      const logo = document.getElementById("logoURL").value.trim();
+      if (name && logo) {
+        db.ref("branding").set({ name, logo });
+        alert("Branding updated!");
+      } else {
+        alert("Please fill both name and logo URL.");
       }
-
-      const storageRef = storage.ref("logo/" + Date.now() + "_" + file.name);
-      storageRef.put(file).then(snapshot => {
-        snapshot.ref.getDownloadURL().then(url => {
-          db.ref("branding").set({ name, logo: url })
-            .then(() => alert("Branding saved successfully!"))
-            .catch(err => alert("Error saving branding: " + err.message));
-        });
-      }).catch(error => {
-        alert("Error uploading logo: " + error.message);
-      });
     }
 
-    function setPrice() {
-      const original = parseInt(document.getElementById("originalPrice").value);
-      const discount = parseInt(document.getElementById("discountPrice").value);
-      if (!original || !discount) return alert("Enter valid prices.");
-      db.ref("price").set({ original, discount });
-      alert("Price updated.");
+    // Save price
+    function savePrice() {
+      const original = document.getElementById("originalPrice").value.trim();
+      const discount = document.getElementById("discountPrice").value.trim();
+      if (original && discount) {
+        db.ref("price").set({ original, discount });
+        alert("Price updated!");
+      } else {
+        alert("Please enter both prices.");
+      }
     }
 
+    // Add new question
     function addQuestion() {
-      const text = document.getElementById("questionText").value;
+      const text = document.getElementById("questionText").value.trim();
       const options = [
-        document.getElementById("opt1").value,
-        document.getElementById("opt2").value,
-        document.getElementById("opt3").value,
-        document.getElementById("opt4").value,
+        document.getElementById("opt1").value.trim(),
+        document.getElementById("opt2").value.trim(),
+        document.getElementById("opt3").value.trim(),
+        document.getElementById("opt4").value.trim()
       ];
-      const correct = parseInt(document.getElementById("correctOption").value);
-      if (!text || options.some(opt => !opt) || isNaN(correct)) {
-        return alert("Fill all fields correctly.");
+      const correct = document.getElementById("correctAnswer").value;
+
+      if (text && options.every(o => o) && correct !== "") {
+        db.ref("questions").push({ text, options, correct });
+        alert("Question added!");
+        clearForm();
+        loadQuestions();
+      } else {
+        alert("Please fill all fields and select the correct answer.");
       }
-      const newQ = { text, options, correct };
-      db.ref("questions").push(newQ);
-      alert("Question added.");
+    }
+
+    // Clear question form
+    function clearForm() {
       document.getElementById("questionText").value = "";
       document.getElementById("opt1").value = "";
       document.getElementById("opt2").value = "";
       document.getElementById("opt3").value = "";
       document.getElementById("opt4").value = "";
-      document.getElementById("correctOption").value = "";
-      renderQuestions();
+      document.getElementById("correctAnswer").value = "";
     }
 
-    function renderQuestions() {
+    // Load and render questions
+    function loadQuestions() {
       db.ref("questions").once("value", snap => {
+        const container = document.getElementById("questionList");
+        container.innerHTML = "";
         const data = snap.val();
-        const list = document.getElementById("questionsList");
-        list.innerHTML = "";
         if (!data) return;
-        Object.keys(data).forEach(id => {
-          const q = data[id];
+        Object.entries(data).forEach(([id, q]) => {
           const div = document.createElement("div");
-          div.className = "question";
+          div.className = "question-box";
           div.innerHTML = `
-            <p><strong>${q.text}</strong></p>
-            ${q.options.map((o, i) => `<p>${i + 1}. ${o}</p>`).join("")}
-            <p>✅ Correct: ${parseInt(q.correct) + 1}</p>
-            <div class="actions">
-              <button onclick="editQuestion('${id}', '${q.text.replace(/'/g, "\\'")}', ${JSON.stringify(q.options)}, ${q.correct})">✏️ Edit</button>
-              <button onclick="deleteQuestion('${id}')">🗑️ Delete</button>
-            </div>
+            <b>${q.text}</b>
+            <ol>
+              ${q.options.map((opt, i) => `
+                <li${i == q.correct ? ' style="color:#58a6ff;"' : ''}>${opt}</li>
+              `).join("")}
+            </ol>
+            <button onclick="deleteQuestion('${id}')">Delete</button>
           `;
-          list.appendChild(div);
+          container.appendChild(div);
         });
       });
     }
 
     function deleteQuestion(id) {
-      if (confirm("Delete this question?")) {
-        db.ref("questions/" + id).remove().then(renderQuestions);
+      if (confirm("Are you sure you want to delete this question?")) {
+        db.ref("questions/" + id).remove();
+        loadQuestions();
       }
     }
 
-    function editQuestion(id, text, options, correct) {
-      document.getElementById("questionText").value = text;
-      document.getElementById("opt1").value = options[0];
-      document.getElementById("opt2").value = options[1];
-      document.getElementById("opt3").value = options[2];
-      document.getElementById("opt4").value = options[3];
-      document.getElementById("correctOption").value = correct;
-      deleteQuestion(id);
-    }
-
+    // Load paid users
     function loadPaidUsers() {
       db.ref("paid_users").once("value", snap => {
-        const data = snap.val();
-        const list = document.getElementById("paidUsersList");
-        list.innerHTML = "";
-        if (!data) return (list.innerHTML = "No paid users yet.");
-        Object.values(data).forEach(u => {
-          const p = document.createElement("p");
-          p.textContent = `${u.name} | ${u.email} | Score: ${u.score}`;
-          list.appendChild(p);
+        const users = snap.val();
+        const div = document.getElementById("paidUsers");
+        div.innerHTML = "";
+        if (!users) return;
+        Object.values(users).forEach(user => {
+          div.innerHTML += `<p>${user.name} (${user.email}) - Score: ${user.score}</p>`;
         });
       });
     }
 
-    renderQuestions();
+    // Initial loads
+    loadQuestions();
     loadPaidUsers();
   </script>
+
 </body>
 </html>
